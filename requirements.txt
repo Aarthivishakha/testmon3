@@ -1,0 +1,16 @@
+﻿# Testing
+pytest==8.3.2
+pytest-testmon==2.1.1
+
+# Coverage
+coverage==7.6.1
+
+# Linting (no black)
+ruff==0.6.4
+pylint==3.2.6
+
+# Type checking
+mypy==1.11.2
+
+# Maintainability Index for Regression Risk Score (QA Resource Allocation)
+radon==6.0.1
