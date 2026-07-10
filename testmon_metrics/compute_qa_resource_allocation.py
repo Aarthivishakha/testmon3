@@ -66,6 +66,7 @@ def _run(command: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
 
 def _pytest_cmd(*extra: str) -> list[str]:
     # Avoid repo pytest.ini addopts/filterwarnings interfering with counts.
+    # Do NOT disable cacheprovider: pytest-testmon reads options["lf"] from it.
     return [
         sys.executable,
         "-m",
@@ -79,8 +80,6 @@ def _pytest_cmd(*extra: str) -> list[str]:
         "--color=no",
         "-W",
         "ignore",
-        "-p",
-        "no:cacheprovider",
         *extra,
     ]
 
