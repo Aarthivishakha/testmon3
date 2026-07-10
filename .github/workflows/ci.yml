@@ -59,10 +59,10 @@ jobs:
 
       - name: QA Resource Allocation (testmon)
         run: |
-          rm -f .testmondata
-          # Single entrypoint builds baseline, forces selective rerun, scores metric
-          python testmon_metrics/compute_qa_resource_allocation.py \
-            --source src --tests tests --rebuild-baseline
+          chmod +x scripts/run_qa_resource_allocation.sh
+          scripts/run_qa_resource_allocation.sh
+          echo "---- metric report ----"
+          cat reports/qa_resource_allocation.json
 
       - name: Upload QA Resource Allocation report
         if: always()

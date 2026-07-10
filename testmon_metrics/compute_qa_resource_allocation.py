@@ -65,7 +65,7 @@ def _run(command: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
 
 
 def _pytest_cmd(*extra: str) -> list[str]:
-    # Avoid repo pytest.ini addopts and force machine-parseable output.
+    # Avoid repo pytest.ini addopts/filterwarnings interfering with counts.
     return [
         sys.executable,
         "-m",
@@ -73,8 +73,12 @@ def _pytest_cmd(*extra: str) -> list[str]:
         "-o",
         "addopts=",
         "-o",
+        "filterwarnings=",
+        "-o",
         "console_output_style=classic",
         "--color=no",
+        "-W",
+        "ignore",
         "-p",
         "no:cacheprovider",
         *extra,
@@ -288,7 +292,14 @@ def compute(
 
     # Normalize paths so radon keys align with git paths.
     mi_by_posix = {Path(k).as_posix(): v for k, v in mi_by_module.items()}
-    churned_posix = {Path(k).as_posix() for k in churned_modules}
+    # Tip-commit churn only, and only under the analysed source tree.
+    source_prefix = source.resolve().relative_to(cwd.resolve()).as_posix()
+    churned_posix = {
+        Path(k).as_posix()
+        for k in churned_modules
+        if Path(k).as_posix() == source_prefix
+        or Path(k).as_posix().startswith(source_prefix + "/")
+    }
 
     risky_modules = sorted(
         module
