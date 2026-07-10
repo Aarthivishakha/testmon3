@@ -12,8 +12,9 @@ REM Normalize and create if missing (no-op if exist)
 if not exist "%SRC%" echo [WARN] SRC not found: "%SRC%"
 if not exist "%TESTS%" echo [WARN] TESTS not found: "%TESTS%"
 
-REM Append only if not already present (case-insensitive)
+REM Tests import `from src.algorithms...` so ROOT must be on PYTHONPATH.
 set "NEWPP=%PYTHONPATH%"
+echo %NEWPP% | find /I "%ROOT%" >nul || set "NEWPP=%NEWPP%;%ROOT%"
 echo %NEWPP% | find /I "%SRC%" >nul || set "NEWPP=%NEWPP%;%SRC%"
 echo %NEWPP% | find /I "%TESTS%" >nul || set "NEWPP=%NEWPP%;%TESTS%"
 

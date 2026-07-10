@@ -20,6 +20,11 @@ venv/
 .coverage.*
 coverage.xml
 htmlcov/
+.testmondata
+.testmondata-*
+
+# Local portable Python / tooling
+.tools/
 
 # Tool caches
 .mypy_cache/

@@ -12,7 +12,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      PYTHONPATH: src  # src/ layout imports
+      # Tests import `from src.algorithms...` so repo root must be on PYTHONPATH.
+      PYTHONPATH: .
 
     strategy:
       matrix:
@@ -55,6 +56,14 @@ jobs:
           coverage run -m pytest -q
           coverage report -m
           coverage xml
+
+      - name: QA Resource Allocation (testmon)
+        run: |
+          rm -f .testmondata
+          # Phase 1: build dependency DB (runs all tests once)
+          pytest -o addopts= --testmon -q tests
+          # Phase 2: touch one source file + selective rerun + metric
+          python testmon_metrics/compute_qa_resource_allocation.py --source src --tests tests
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4

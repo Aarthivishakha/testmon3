@@ -111,6 +111,21 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### QA Resource Allocation (testmon)
+
+Two-phase selection is required so `tests_saved > 0`:
+
+```bash
+# Windows
+scripts\run_qa_resource_allocation.bat
+
+# Or manually
+set PYTHONPATH=%CD%
+python testmon_metrics\compute_qa_resource_allocation.py --source src --tests tests --rebuild-baseline
+```
+
+Success looks like: `status=OK`, `testmondata_present=true`, `metric_covered=true`, `tests_saved > 0`.
+
 ### Quality & Tests
 - ruff format .
 - ruff check .
