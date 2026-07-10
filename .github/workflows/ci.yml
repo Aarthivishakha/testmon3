@@ -12,8 +12,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # Tests import `from src.algorithms...` so repo root must be on PYTHONPATH.
       PYTHONPATH: .
+      PY_COLORS: "0"
+      NO_COLOR: "1"
 
     strategy:
       matrix:
@@ -59,8 +60,9 @@ jobs:
 
       - name: QA Resource Allocation (testmon)
         run: |
-          chmod +x scripts/run_qa_resource_allocation.sh
-          scripts/run_qa_resource_allocation.sh
+          set -euo pipefail
+          rm -f .testmondata
+          python testmon_metrics/compute_qa_resource_allocation.py --source src --tests tests --rebuild-baseline --output reports/qa_resource_allocation.json
           echo "---- metric report ----"
           cat reports/qa_resource_allocation.json
 
@@ -70,6 +72,7 @@ jobs:
         with:
           name: qa-resource-allocation
           path: reports/qa_resource_allocation.json
+          if-no-files-found: warn
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
