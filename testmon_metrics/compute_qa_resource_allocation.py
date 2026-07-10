@@ -276,10 +276,12 @@ def compute(
             cwd,
             change_file=change_file,
         )
+        touch_posix = change_file.resolve().relative_to(cwd.resolve()).as_posix()
     else:
         selected_tests = tests_run
         deselected_tests = max(all_tests - selected_tests, 0)
         raw_output = ""
+        touch_posix = ""
 
     tests_saved = max(all_tests - selected_tests, 0)
     if deselected_tests and tests_run is None:
@@ -300,6 +302,9 @@ def compute(
         if Path(k).as_posix() == source_prefix
         or Path(k).as_posix().startswith(source_prefix + "/")
     }
+    # The metric harness intentionally edits one source file; don't treat that as risk churn.
+    if touch_posix:
+        churned_posix.discard(touch_posix)
 
     risky_modules = sorted(
         module
@@ -312,6 +317,8 @@ def compute(
     metric_covered = bool(
         all_tests > 0
         and tests_saved > 0
+        and selected_tests > 0
+        and selection_ratio_pct <= 14
         and datafile.exists()
         and normalized_regression_risk == 100
     )
@@ -387,7 +394,10 @@ def main() -> None:
         # Still emit report; fail the process so CI surfaces the gap.
         raise SystemExit(
             "QA Resource Allocation metric not covered: "
+            f"tests_all={result.get('tests_all')} "
+            f"tests_run={result.get('tests_run')} "
             f"tests_saved={result.get('tests_saved')} "
+            f"selection_ratio_pct={result.get('selection_ratio_pct')} "
             f"normalized_regression_risk={result.get('normalized_regression_risk')} "
             f"risky_modules={result.get('risky_modules')}. "
             "Re-run with --rebuild-baseline."
