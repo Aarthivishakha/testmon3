@@ -198,7 +198,7 @@ def _parse_mi_value(payload: Any) -> float | None:
 
 
 def _maintainability_index_by_module(source: Path, cwd: Path) -> dict[str, float]:
-    proc = _run([sys.executable, "-m", "radon", "mi", "-j", "-s", str(source)], cwd)
+    proc = _run([sys.executable, "-m", "radon", "mi", "-j", str(source)], cwd)
     if proc.returncode != 0:
         raise RuntimeError(proc.stderr.strip() or "radon MI analysis failed.")
 
@@ -302,7 +302,7 @@ def compute(
         all_tests > 0
         and tests_saved > 0
         and datafile.exists()
-        and normalized_regression_risk >= 86  # at most 0 risky modules preferred; allow 1
+        and normalized_regression_risk == 100
     )
 
     return {
@@ -373,9 +373,12 @@ def main() -> None:
     output_path.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     if not result.get("metric_covered"):
+        # Still emit report; fail the process so CI surfaces the gap.
         raise SystemExit(
             "QA Resource Allocation metric not covered: "
-            "need tests_saved > 0 and normalized_regression_risk >= 86. "
+            f"tests_saved={result.get('tests_saved')} "
+            f"normalized_regression_risk={result.get('normalized_regression_risk')} "
+            f"risky_modules={result.get('risky_modules')}. "
             "Re-run with --rebuild-baseline."
         )
 
