@@ -60,10 +60,16 @@ jobs:
       - name: QA Resource Allocation (testmon)
         run: |
           rm -f .testmondata
-          # Phase 1: build dependency DB (runs all tests once)
-          pytest -o addopts= --testmon -q tests
-          # Phase 2: touch one source file + selective rerun + metric
-          python testmon_metrics/compute_qa_resource_allocation.py --source src --tests tests
+          # Single entrypoint builds baseline, forces selective rerun, scores metric
+          python testmon_metrics/compute_qa_resource_allocation.py \
+            --source src --tests tests --rebuild-baseline
+
+      - name: Upload QA Resource Allocation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-resource-allocation
+          path: reports/qa_resource_allocation.json
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4

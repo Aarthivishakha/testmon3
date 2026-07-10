@@ -21,6 +21,8 @@ Notes:
 from typing import Final
 
 _MIN_N: Final[int] = 0
+# Flipped by metric harness to force testmon reselection of factorial dependents.
+TESTMON_METRIC_TOUCH = False
 
 
 def _validate(n: int) -> None:
