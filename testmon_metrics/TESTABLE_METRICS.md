@@ -65,17 +65,25 @@ Or use the helper script:
 scripts\run_qa_resource_allocation.bat
 ```
 
-Expected JSON fields when the metric is covered:
+Expected JSON fields when the metric is covered (Testable raw schema + aliases):
 
 ```text
 status = OK
 testmondata_present = true
-tests_all > 0
-tests_run >= 0          # selected by testmon after the source touch
-tests_saved > 0         # deselected / not re-run
+tests_total_count > 0          # alias: tests_all
+tests_selected_count > 0       # alias: tests_run
+tests_deselected_count > 0     # alias: tests_saved / tests_deselected
+selection_ratio = selected / total   # e.g. 0.043 (~4.32%)
 metric_covered = true
 test_execution_efficiency = tests_saved / tests_all
 ```
+
+Artifacts written:
+
+- `reports/qa_resource_allocation.json` — full metric report
+- `reports/testmon.json` — Testable-shaped payload (`tests_*_count`, `selection_ratio`, `raw_stdout_tail`)
+
+**Note:** A single `pytest --testmon` without the two-phase baseline+touch flow will not produce meaningful selection counts. Always use `compute_qa_resource_allocation.py`.
 
 If a CI job already has test counts, pass them directly:
 

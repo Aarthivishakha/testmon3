@@ -71,7 +71,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: qa-resource-allocation
-          path: reports/qa_resource_allocation.json
+          path: |
+            reports/qa_resource_allocation.json
+            reports/testmon.json
           if-no-files-found: warn
 
       - name: Upload coverage artifact

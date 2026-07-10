@@ -313,6 +313,9 @@ def compute(
     regression_risk_score = len(risky_modules) * 25
     normalized_regression_risk = max(0, 100 - regression_risk_score)
 
+    selection_ratio = (selected_tests / all_tests) if all_tests else 0.0
+    raw_stdout_tail = "\n".join(raw_output.strip().splitlines()[-20:])
+
     metric_covered = bool(
         all_tests > 0
         and tests_saved > 0
@@ -322,6 +325,7 @@ def compute(
         and normalized_regression_risk == 100
     )
 
+    # Platform-facing fields (Testable raw JSON schema) + internal metric fields.
     return {
         "technique": "Cyclomatic Complexity",
         "classification": "Test Prioritization",
@@ -329,11 +333,18 @@ def compute(
         "tool": "testmon",
         "status": "OK" if metric_covered else "FAIL",
         "testmondata_present": datafile.exists(),
+        # Testable scanner field names (required for metric derivation):
+        "tests_total_count": all_tests,
+        "tests_selected_count": selected_tests,
+        "tests_deselected_count": deselected_tests if deselected_tests else tests_saved,
+        "selection_ratio": round(selection_ratio, 6),
+        "raw_stdout_tail": raw_stdout_tail,
+        # Spreadsheet / internal aliases:
         "formula": "test_execution_efficiency = tests_saved / max(tests_all, 1)",
         "tests_all": all_tests,
         "tests_run": selected_tests,
         "tests_saved": tests_saved,
-        "tests_deselected": deselected_tests,
+        "tests_deselected": deselected_tests if deselected_tests else tests_saved,
         "test_execution_efficiency": test_execution_efficiency,
         "selection_ratio_pct": round(selection_ratio_pct, 2),
         "metric_covered": metric_covered,
@@ -345,7 +356,7 @@ def compute(
         "normalized_regression_risk": normalized_regression_risk,
         "risky_modules": risky_modules,
         "churn_since": churn_since,
-        "selection_raw_tail": "\n".join(raw_output.strip().splitlines()[-12:]),
+        "selection_raw_tail": raw_stdout_tail,
     }
 
 
@@ -387,16 +398,38 @@ def main() -> None:
 
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    payload = json.dumps(result, indent=2, sort_keys=True) + "\n"
+    output_path.write_text(payload, encoding="utf-8")
+
+    # Also emit the tool-named artifact Testable downloads as testmon.json.
+    platform_path = Path("reports/testmon.json")
+    platform_path.parent.mkdir(parents=True, exist_ok=True)
+    platform_payload = {
+        "status": result["status"],
+        "tests_total_count": result["tests_total_count"],
+        "tests_selected_count": result["tests_selected_count"],
+        "tests_deselected_count": result["tests_deselected_count"],
+        "selection_ratio": result["selection_ratio"],
+        "testmondata_present": result["testmondata_present"],
+        "raw_stdout_tail": result["raw_stdout_tail"],
+        "metric_covered": result["metric_covered"],
+        "selection_ratio_pct": result["selection_ratio_pct"],
+        "test_execution_efficiency": result["test_execution_efficiency"],
+        "normalized_regression_risk": result["normalized_regression_risk"],
+    }
+    platform_path.write_text(
+        json.dumps(platform_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
     if not result.get("metric_covered"):
         # Still emit report; fail the process so CI surfaces the gap.
         raise SystemExit(
             "QA Resource Allocation metric not covered: "
-            f"tests_all={result.get('tests_all')} "
-            f"tests_run={result.get('tests_run')} "
-            f"tests_saved={result.get('tests_saved')} "
-            f"selection_ratio_pct={result.get('selection_ratio_pct')} "
+            f"tests_total_count={result.get('tests_total_count')} "
+            f"tests_selected_count={result.get('tests_selected_count')} "
+            f"tests_deselected_count={result.get('tests_deselected_count')} "
+            f"selection_ratio={result.get('selection_ratio')} "
             f"normalized_regression_risk={result.get('normalized_regression_risk')} "
             f"risky_modules={result.get('risky_modules')}. "
             "Re-run with --rebuild-baseline."

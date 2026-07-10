@@ -7,8 +7,8 @@
 | **Metric** | QA Resource Allocation |
 | **Tool** | testmon |
 | **Formula** | `test_execution_efficiency = tests_saved / max(tests_all, 1)` |
-| **Regression Risk Score** | `Count(Modules with MI < 40 AND recently churned) � 25` |
-| **Normalisation** | `MAX(0, 100 � Regression_Risk_Score)` |
+| **Regression Risk Score** | `Count(Modules with MI < 40 AND recently churned) � 25` |
+| **Normalisation** | `MAX(0, 100 � Regression_Risk_Score)` |
 | **Branching** | Single-branch only: `master` |
 
 Details: [testmon_metrics/TESTABLE_METRICS.md](testmon_metrics/TESTABLE_METRICS.md)
@@ -36,63 +36,63 @@ Below is the high-level layout (key files only). Ellipses mean additional files 
 
 ```text
 .
-├─ README.md
-├─ requirements.txt
-├─ pytest.ini
-├─ mypy.ini
-├─ ruff.toml
-├─ .coveragerc
-├─ .gitignore
-├─ .github/
-│  └─ workflows/
-│     └─ ci.yml
-├─ src/
-│  └─ algorithms/
-│     ├─ arrays/
-│     │  ├─ array_pair_sum.py
-│     │  ├─ largest_contiguous_sum.py
-│     │  └─ missing_element.py
-│     ├─ numbers/
-│     │  ├─ factorial.py
-│     │  ├─ fibonacci.py
-│     │  ├─ recursive_sum.py
-│     │  ├─ sum_of_digits.py
-│     │  └─ coin_change_min.py
-│     ├─ strings/
-│     │  ├─ balance_parentheses.py
-│     │  ├─ sentence_reversal.py
-│     │  ├─ string_compression.py
-│     │  ├─ unique_characters.py
-│     │  ├─ word_split.py
-│     │  └─ reverse_string_recursive.py
-│     ├─ structures/
-│     │  ├─ stack.py
-│     │  ├─ queue.py
-│     │  ├─ deque.py
-│     │  ├─ queue2stack.py
-│     │  ├─ linked_list.py
-│     │  └─ binary_tree.py
-│     └─ patterns/
-│        └─ access_control.py
-└─ tests/
-   ├─ test_array_pair_sum.py
-   ├─ test_largest_contiguous_sum.py
-   ├─ test_missing_element.py
-   ├─ test_factorial.py
-   ├─ test_fibonacci.py
-   ├─ test_recursive_sum.py
-   ├─ test_sum_of_digits.py
-   ├─ test_balance_parentheses.py
-   ├─ test_sentence_reversal.py
-   ├─ test_string_compression.py
-   ├─ test_unique_characters.py
-   ├─ test_word_split.py
-   ├─ test_stack.py
-   ├─ test_queue.py
-   ├─ test_deque.py
-   ├─ test_queue2stack.py
-   ├─ test_linked_list.py
-   └─ test_binary_tree.py
+?? README.md
+?? requirements.txt
+?? pytest.ini
+?? mypy.ini
+?? ruff.toml
+?? .coveragerc
+?? .gitignore
+?? .github/
+?  ?? workflows/
+?     ?? ci.yml
+?? src/
+?  ?? algorithms/
+?     ?? arrays/
+?     ?  ?? array_pair_sum.py
+?     ?  ?? largest_contiguous_sum.py
+?     ?  ?? missing_element.py
+?     ?? numbers/
+?     ?  ?? factorial.py
+?     ?  ?? fibonacci.py
+?     ?  ?? recursive_sum.py
+?     ?  ?? sum_of_digits.py
+?     ?  ?? coin_change_min.py
+?     ?? strings/
+?     ?  ?? balance_parentheses.py
+?     ?  ?? sentence_reversal.py
+?     ?  ?? string_compression.py
+?     ?  ?? unique_characters.py
+?     ?  ?? word_split.py
+?     ?  ?? reverse_string_recursive.py
+?     ?? structures/
+?     ?  ?? stack.py
+?     ?  ?? queue.py
+?     ?  ?? deque.py
+?     ?  ?? queue2stack.py
+?     ?  ?? linked_list.py
+?     ?  ?? binary_tree.py
+?     ?? patterns/
+?        ?? access_control.py
+?? tests/
+   ?? test_array_pair_sum.py
+   ?? test_largest_contiguous_sum.py
+   ?? test_missing_element.py
+   ?? test_factorial.py
+   ?? test_fibonacci.py
+   ?? test_recursive_sum.py
+   ?? test_sum_of_digits.py
+   ?? test_balance_parentheses.py
+   ?? test_sentence_reversal.py
+   ?? test_string_compression.py
+   ?? test_unique_characters.py
+   ?? test_word_split.py
+   ?? test_stack.py
+   ?? test_queue.py
+   ?? test_deque.py
+   ?? test_queue2stack.py
+   ?? test_linked_list.py
+   ?? test_binary_tree.py
 ```
 
 
@@ -124,7 +124,19 @@ set PYTHONPATH=%CD%
 python testmon_metrics\compute_qa_resource_allocation.py --source src --tests tests --rebuild-baseline
 ```
 
-Success looks like: `status=OK`, `testmondata_present=true`, `metric_covered=true`, `tests_saved > 0`.
+Success looks like (Testable raw fields):
+
+```text
+status=OK
+testmondata_present=true
+tests_total_count=139
+tests_selected_count=6
+tests_deselected_count=133
+selection_ratio~=0.043   # <= 0.14 (dashboard <=14%)
+metric_covered=true
+```
+
+Also writes `reports/testmon.json` with that schema.
 
 ### Quality & Tests
 - ruff format .
@@ -145,12 +157,12 @@ Success looks like: `status=OK`, `testmondata_present=true`, `metric_covered=tru
 | Numbers    | Fibonacci (iter/rec/gen/seq)     | `numbers/fibonacci.py`                            | O(n) / exponential   | O(1)/O(n) |
 | Numbers    | Recursive Sum 1..n               | `numbers/recursive_sum.py`                        | O(n)                 | O(n)   |
 | Numbers    | Sum of Digits                    | `numbers/sum_of_digits.py`                        | O(d)                 | O(1)   |
-| Numbers    | Coin Change (min, memo)          | `numbers/coin_change_min.py`                      | ~O(T·k) (memo)       | O(T)   |
+| Numbers    | Coin Change (min, memo)          | `numbers/coin_change_min.py`                      | ~O(T�k) (memo)       | O(T)   |
 | Strings    | Balanced Parentheses             | `strings/balance_parentheses.py`                  | O(n)                 | O(n)   |
 | Strings    | Sentence Reversal                | `strings/sentence_reversal.py`                    | O(n)                 | O(n)   |
 | Strings    | String Compression (RLE)         | `strings/string_compression.py`                   | O(n)                 | O(n)   |
 | Strings    | Unique Characters                | `strings/unique_characters.py`                    | O(n)                 | O(n)   |
-| Strings    | Word Split (DP)                  | `strings/word_split.py`                           | O(n²)                | O(n)   |
+| Strings    | Word Split (DP)                  | `strings/word_split.py`                           | O(n�)                | O(n)   |
 | Strings    | Reverse String (recursive)       | `strings/reverse_string_recursive.py`             | O(n)                 | O(n)   |
 | Structures | Stack                            | `structures/stack.py`                             | O(1) ops             | O(n)   |
 | Structures | Queue (list-based)               | `structures/queue.py`                             | enqueue O(n), dequeue O(1) | O(n) |
@@ -169,7 +181,7 @@ Success looks like: `status=OK`, `testmondata_present=true`, `metric_covered=tru
 - Type hints + docstrings
 - Tests: **1 behavior = 1 assert**; use `pytest.raises` for exceptions
 - Lint/typing/tests pass (`ruff`, `mypy`, `pytest`)
-- Coverage ≥ 90% and entry added to **Algorithms Index**
+- Coverage ? 90% and entry added to **Algorithms Index**
 
 ## Continuous Integration (CI)
 
